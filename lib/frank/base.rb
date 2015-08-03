@@ -1,6 +1,6 @@
 require 'rack'
 
-module Frank
+ module Frank
   class Base
     class << self
       def inherited(base)
@@ -29,7 +29,7 @@ module Frank
       def invoke!
         # TODO befoer
         key = route_key(@request.request_method, @request.path_info)
-        @body = route_eval { @routes[key].call }
+        @body = route_eval { @routes[key].call if @routes[key] }
         # TODO after
       end
 
