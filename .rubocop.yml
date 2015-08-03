@@ -32,9 +32,6 @@ Style/GuardClause:
 Style/PercentLiteralDelimiters:
   Enabled: false
 
-Style/StringLiterals:
-  EnforcedStyle: double_quotes
-
 RegexpLiteral:
   MaxSlashes: 0
 
