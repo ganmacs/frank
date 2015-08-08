@@ -34,22 +34,36 @@ module Frank
       end
 
       def set_routes(type, path, &block)
+        method_name = "#{type}_#{path}"
         path_pattern = generate_path_pattern(path)
-        wrapped = wrapp_block(block)
+        unbound_method = generate_method(method_name, block)
+        wrapped = wrap_block(unbound_method)
         @routes[type] << [path_pattern, wrapped]
       end
 
-      def wrapp_block(block)
-        if block.arity == 0
-          proc { |args| block.call }
+      # We use unboundMethod instead of lambda,
+      # bacause use instance variable such as @params in user defined method
+      # @return [UnboundMethod]
+      def generate_method(method_name, block)
+        method_name = method_name.to_sym
+        define_method(method_name, &block)
+        method = instance_method(method_name)
+        remove_method(method_name)
+        method
+      end
+
+      # @params [UnboundMethod] block
+      def wrap_block(unbound_method)
+        if unbound_method.arity == 0
+          proc { |obj, _args| unbound_method.bind(obj).call }
         else
-          proc { |args| block.call(*args) }
+          proc { |obj, args| unbound_method.bind(obj).call(*args) }
         end
       end
 
       def generate_path_pattern(path)
         pattern = path.gsub(/:\w+/, '(\w+)')
-         Regexp.new(pattern + '\Z')
+        Regexp.new(pattern + '\Z')
       end
 
       def run!
@@ -75,10 +89,13 @@ module Frank
       end
     end
 
+    attr_reader :params
+
     def call(env)
       @env = env
       @request = Rack::Request.new(env)
       @response = Rack::Response.new
+      @params = @request.params
 
       dispatch
 
@@ -112,7 +129,7 @@ module Frank
     def process_route(pattern, block)
       if (matched = pattern.match(@request.path_info))
         args = matched.captures
-        block.call(args)
+        block.call(self, args)
       end
     end
   end
