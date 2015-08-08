@@ -25,26 +25,41 @@ module Frank
         prototype.call(env)
       end
 
+      def before(path = nil, &block)
+        add_filter :before, path, &block
+      end
+
+      def after(path = nil, &block)
+        add_filter :after, path, &block
+      end
+
+      def add_filter(type, path = nil, &block) # all path is pass
+        @filters[type] << compile(type, path || '/.*', &block)
+      end
+
       def prototype
         @prototype ||= new
       end
 
       def get(path, &block)
-        set_routes :GET, path, &block
+        add_route :GET, path, &block
       end
 
       def post(path, &block)
-        set_routes :POST, path, &block
+        add_route :POST, path, &block
       end
 
-      def set_routes(type, path, &block)
+      def add_route(type, path, &block)
+        @routes[type] << compile(type, path, &block)
+      end
+
+      def compile(type, path, &block)
         method_name = "#{type}_#{path}"
         path_pattern = generate_path_pattern(path)
         unbound_method = generate_method(method_name, block)
         wrapped = wrap_block(unbound_method)
-        @routes[type] << [path_pattern, wrapped]
+        [path_pattern, wrapped]
       end
-
       # We use unboundMethod instead of lambda,
       # bacause use instance variable such as @params in user defined method
       # @return [UnboundMethod]
@@ -113,9 +128,21 @@ module Frank
     end
 
     def dispatch
-      # TODO befoer
+      before!
       routes!
-      # TODO after
+      after!
+    end
+
+    def before!
+      filter! :before
+    end
+
+    def after!
+      filter! :before
+    end
+
+    def filter!(base = configs, type)
+      base.filters[type].each { |args| process_route(*args) }
     end
 
     def routes!(base = configs)

@@ -73,7 +73,9 @@ describe Frank::Base do
       let(:path) { '/message' }
       let(:opt) do
         {
-          params: { body: 'this is body' }
+          params: {
+            body: 'this is body'
+          }
         }
       end
 
@@ -81,6 +83,26 @@ describe Frank::Base do
         expect(response).to be_ok
         expect(response.body).to eq opt[:params][:body]
       end
+    end
+  end
+
+  describe 'filter method' do
+    let(:test_app) do
+      Class.new(Frank::Base) do |_x|
+        before { @global_config = 'Hello World' }
+        after { $stdin.puts 'hoge' }
+
+        get('/global') { @global_config }
+      end
+    end
+
+    let(:response) do
+      Rack::MockRequest.new(test_app).get('global')
+    end
+
+    it 'processes requests with #call' do
+      expect(response).to be_ok
+      expect(response.body).to eq 'Hello World'
     end
   end
 end
