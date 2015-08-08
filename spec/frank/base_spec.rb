@@ -56,6 +56,26 @@ describe Frank::Base do
     end
   end
 
+  describe 'Does not maintain the state' do
+    let(:test_app) do
+      Class.new(Frank::Base) do |_x|
+        get '/unmaintain' do
+          @foo ||= 'foo'
+          @foo = "#{@foo}_bar"
+          @foo
+        end
+      end
+    end
+
+    it 'processes requests with #call' do
+      2.times do
+        response = Rack::MockRequest.new(test_app).get('/unmaintain')
+        expect(response).to be_ok
+        expect(response.body).to eq 'foo_bar'
+      end
+    end
+  end
+
   describe 'creates POST method' do
     let(:test_app) do
       Class.new(Frank::Base) do |_x|

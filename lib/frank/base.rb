@@ -111,6 +111,10 @@ module Frank
     attr_reader :params
 
     def call(env)
+      dup.call!(env)
+    end
+
+    def call!(env)
       @env = env
       @request = Rack::Request.new(env)
       @response = Rack::Response.new
