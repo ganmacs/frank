@@ -34,8 +34,22 @@ module Frank
       end
 
       def set_routes(type, path, &block)
-        method_name = "#{type}_#{path}"
-        @routes[type] << [method_name, path, block]
+        path_pattern = generate_path_pattern(path)
+        wrapped = wrapp_block(block)
+        @routes[type] << [path_pattern, wrapped]
+      end
+
+      def wrapp_block(block)
+        if block.arity == 0
+          proc { |args| block.call }
+        else
+          proc { |args| block.call(*args) }
+        end
+      end
+
+      def generate_path_pattern(path)
+        pattern = path.gsub(/:\w+/, '(\w+)')
+         Regexp.new(pattern + '\Z')
       end
 
       def run!
@@ -61,41 +75,45 @@ module Frank
       end
     end
 
-    def configs
-      self.class.configs
-    end
-
     def call(env)
       @env = env
       @request = Rack::Request.new(env)
       @response = Rack::Response.new
 
-      invoke
+      dispatch
 
       @response.finish
     end
 
-    def invoke
+    private
+
+    def configs
+      self.class.configs
+    end
+
+    def dispatch
       # TODO befoer
       routes!
       # TODO after
     end
 
     def routes!(base = configs)
-      pass = nil
+      body = nil
 
       if (routes = base.routes[@request.request_method.to_sym])
-        routes.each do |method_name, path, block|
-          pass = block.call if path == @request.path_info
+        routes.each do |pattern, block|
+          break if (body = process_route(pattern, block))
         end
       end
 
-      @response.write(pass)
-      @body = pass
+      @response.write(body)
     end
 
-    def route_eval
-      yield
+    def process_route(pattern, block)
+      if (matched = pattern.match(@request.path_info))
+        args = matched.captures
+        block.call(args)
+      end
     end
   end
 end
