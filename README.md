@@ -1,6 +1,9 @@
 # Frank
 
-Frank create web applications.
+<a href="https://codeclimate.com/github/ganmacs/frank"><img src="https://codeclimate.com/github/ganmacs/frank/badges/gpa.svg" /></a>
+[![Build Status](https://travis-ci.org/ganmacs/frank.svg)](https://travis-ci.org/ganmacs/frank)
+
+Frank is DSL for creating web applications inspired by Sinatra.
 
 ## Usage
 
@@ -26,7 +29,7 @@ class App < Frank::Base
     params[:body]
   end
 
-  post '/app_name' do
+  get '/app_name' do
     @config['name']
   end
 end
