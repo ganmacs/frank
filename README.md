@@ -1,6 +1,36 @@
 # Frank
 
+Frank create web applications.
+
 ## Usage
+
+```rb
+require 'frank'
+
+class App < Frank::Base
+  before do
+    @config = {
+      name: 'sample_app'
+    }
+  end
+
+  get '/' do
+    'root'
+  end
+
+  get '/user/:name' do |name|
+    name
+  end
+
+  post '/message' do
+    params[:body]
+  end
+
+  post '/app_name' do
+    @config['name']
+  end
+end
+```
 
 ## Development
 
