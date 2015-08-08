@@ -55,4 +55,32 @@ describe Frank::Base do
       end
     end
   end
+
+  describe 'creates POST method' do
+    let(:test_app) do
+      Class.new(Frank::Base) do |_x|
+        post '/message' do
+          params['body']
+        end
+      end
+    end
+
+    let(:response) do
+      Rack::MockRequest.new(test_app).post(path, opt)
+    end
+
+    context 'with normal condition' do
+      let(:path) { '/message' }
+      let(:opt) do
+        {
+          params: { body: 'this is body' }
+        }
+      end
+
+      it 'processes requests with #call' do
+        expect(response).to be_ok
+        expect(response.body).to eq opt[:params][:body]
+      end
+    end
+  end
 end

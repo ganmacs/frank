@@ -33,6 +33,10 @@ module Frank
         set_routes :GET, path, &block
       end
 
+      def post(path, &block)
+        set_routes :POST, path, &block
+      end
+
       def set_routes(type, path, &block)
         method_name = "#{type}_#{path}"
         path_pattern = generate_path_pattern(path)
