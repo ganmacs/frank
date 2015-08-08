@@ -13,21 +13,32 @@ describe Frank::Base do
     end
 
     context 'GET method' do
-      let(:response) { Rack::MockRequest.new(test_app).get('/') }
+      let(:response) { Rack::MockRequest.new(test_app).get(path) }
 
-      it 'processes requests with #call' do
-        expect(response).to be_ok
-        expect(response.body).to eq 'root'
+      context 'with normal condition' do
+        let(:path) do
+          '/'
+        end
+
+        it 'processes requests with #call' do
+          expect(response).to be_ok
+          expect(response.body).to eq 'root'
+        end
       end
 
       context 'with args' do
         let(:name) { 'ganmacs' }
-        let(:response) { Rack::MockRequest.new(test_app).get("/user/#{name}") }
+        let(:path) do
+          "/user/#{name}"
+        end
 
         it 'processes requests with #call' do
           expect(response).to be_ok
           expect(response.body).to eq name
         end
+      end
+
+      context 'with paramsa' do
       end
     end
   end
