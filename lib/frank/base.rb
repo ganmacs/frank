@@ -16,7 +16,7 @@ module Frank
       end
 
       def reset
-        @routes = Hash.new([])
+        @routes = Hash.new { |obj, key| obj[key] = [] }
         @filters = { before: [], after: [] }
       end
 
@@ -49,6 +49,14 @@ module Frank
         add_route :POST, path, &block
       end
 
+      def put(path, &block)
+        add_route :PUT, path, &block
+      end
+
+      def delete(path, &block)
+        add_route :DELETE, path, &block
+      end
+
       def add_route(type, path, &block)
         @routes[type] << compile(type, path, &block)
       end
@@ -60,6 +68,7 @@ module Frank
         wrapped = wrap_block(unbound_method)
         [path_pattern, wrapped]
       end
+
       # We use unboundMethod instead of lambda,
       # bacause use instance variable such as @params in user defined method
       # @return [UnboundMethod]

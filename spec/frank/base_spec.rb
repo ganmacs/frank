@@ -106,6 +106,42 @@ describe Frank::Base do
     end
   end
 
+  describe 'creates DELETE and PUT method' do
+    let(:test_app) do
+      Class.new(Frank::Base) do |_x|
+        delete '/user/:id' do |id|
+          "delete #{id}"
+        end
+
+        put '/user/:id' do |id|
+          "update #{id}"
+        end
+      end
+    end
+
+    let(:response_mock_generator) do
+      Rack::MockRequest.new(test_app)
+    end
+
+    context 'DELETE method' do
+      let(:response) { response_mock_generator.delete('/user/2') }
+
+      it 'process requests with #call' do
+        expect(response).to be_ok
+        expect(response.body).to eq 'delete 2'
+      end
+    end
+
+    context 'PUT method' do
+      let(:response) { response_mock_generator.put('/user/3') }
+
+      it 'process requests with #call' do
+        expect(response).to be_ok
+        expect(response.body).to eq 'update 3'
+      end
+    end
+  end
+
   describe 'filter method' do
     let(:test_app) do
       Class.new(Frank::Base) do |_x|
